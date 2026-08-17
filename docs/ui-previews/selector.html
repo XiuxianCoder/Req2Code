@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Req2Code 工作项选择器预览</title>
+  <style>
+    html, body { margin: 0; min-height: 100%; background: #111318; }
+    body { display: flex; justify-content: center; padding: 24px; }
+    iframe { width: min(1180px, 100%); height: 720px; border: 0; }
+  </style>
+</head>
+<body>
+<iframe id="app" src="/req2code/resources/work_item_selector.html" title="Req2Code 工作项选择器"></iframe>
+<script>
+  const selection = {
+    selection_id: "demo-selector",
+    items: [
+      {
+        key: "DEMO-001", id: "DEMO-REQ-001", type: "requirement", title: "示例需求",
+        status: "planning", priority: "Middle", owner: "用户X", reporter: "用户X",
+        iteration: "示例迭代", updated_at: "2026-01-01 10:00:00",
+        description_excerpt: "这是用于公开演示的需求说明，不包含真实业务数据。"
+      },
+      {
+        key: "DEMO-002", id: "DEMO-BUG-001", type: "bug", title: "示例缺陷",
+        status: "in_progress", priority: "High", severity: "Serious", owner: "用户X", reporter: "用户X",
+        module: "示例模块", updated_at: "2026-01-01 11:00:00",
+        description_excerpt: "这是用于公开演示的缺陷说明，不包含真实业务数据。"
+      },
+      {
+        key: "DEMO-003", id: "DEMO-BUG-002", type: "bug", title: "界面交互优化",
+        status: "in_progress", priority: "Urgent", severity: "Fatal", owner: "用户X", reporter: "用户X",
+        module: "示例模块", updated_at: "2026-01-01 12:00:00",
+        description_excerpt: "这是用于公开演示的缺陷说明，不包含真实业务数据。"
+      },
+      {
+        key: "DEMO-004", id: "DEMO-REQ-002", type: "requirement", title: "文档创建示例",
+        status: "planning", priority: "High", owner: "用户X", reporter: "用户X",
+        iteration: "示例迭代", updated_at: "2026-01-01 13:00:00",
+        description_excerpt: "这是用于公开演示的需求说明，不包含真实业务数据。"
+      }
+    ]
+  };
+  const frame = document.getElementById("app");
+  frame.addEventListener("load", () => {
+    frame.contentWindow.postMessage({
+      jsonrpc: "2.0",
+      method: "ui/notifications/tool-result",
+      params: { _meta: { "req2code/selection": selection }, selection_id: selection.selection_id }
+    }, "*");
+  });
+  window.addEventListener("message", event => {
+    if (event.source !== frame.contentWindow || event.data?.id === undefined) return;
+    event.source.postMessage({ jsonrpc: "2.0", id: event.data.id, result: {} }, "*");
+  });
+</script>
+</body>
+</html>

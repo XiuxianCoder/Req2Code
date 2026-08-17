@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "req2code": {
+      "command": "req2code-mcp",
+      "args": []
+    }
+  }
+}

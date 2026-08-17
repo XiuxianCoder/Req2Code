@@ -1,0 +1,11 @@
+interface:
+  display_name: "Req2Code Workflow"
+  short_description: "Configure sources, select work, develop, and review"
+  default_prompt: "Use $req2code-workflow to let me choose or configure TAPD, Feishu, or Mock privately, select work items, develop and test them in this project, then stop for human approval."
+
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "req2code"
+      description: "Req2Code source configuration, work-item selection, task-session, finalization, and reporting tools"
+      transport: "stdio"

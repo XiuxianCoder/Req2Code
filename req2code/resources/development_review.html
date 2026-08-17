@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    :root { color-scheme: light dark; font-family: ui-sans-serif, system-ui, "Segoe UI", sans-serif; }
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 14px; background: transparent; color: CanvasText; }
+    .shell { border: 1px solid color-mix(in srgb, CanvasText 18%, transparent); border-radius: 14px; overflow: hidden; }
+    header { padding: 15px 17px 12px; background: color-mix(in srgb, Canvas 93%, #2f6fed 7%); }
+    h1 { margin: 0 0 5px; font-size: 18px; }
+    h2 { margin: 0 0 8px; font-size: 15px; }
+    h3 { margin: 0 0 7px; font-size: 14px; }
+    .muted { color: color-mix(in srgb, CanvasText 62%, transparent); font-size: 12px; }
+    .badges { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 9px; }
+    .badge { border-radius: 999px; padding: 3px 8px; font-size: 11px; font-weight: 700; background: color-mix(in srgb, CanvasText 9%, transparent); }
+    .ok { color: #15803d; background: color-mix(in srgb, #22c55e 14%, transparent); }
+    .lock { color: #1d4ed8; background: color-mix(in srgb, #3b82f6 14%, transparent); }
+    .warn { color: #b45309; background: color-mix(in srgb, #f59e0b 16%, transparent); }
+    .content { max-height: 610px; overflow: auto; padding: 12px; background: color-mix(in srgb, Canvas 97%, CanvasText 3%); }
+    .item { padding: 13px; margin-bottom: 10px; border: 1px solid color-mix(in srgb, CanvasText 14%, transparent); border-radius: 11px; background: Canvas; }
+    .item-head { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; margin-bottom: 8px; }
+    .item-id { color: #2f6fed; font-weight: 800; }
+    .type { border-radius: 999px; padding: 2px 7px; font-size: 10px; font-weight: 750; }
+    .bug { color: #c2410c; background: color-mix(in srgb, #f97316 15%, transparent); }
+    .story { color: #2563eb; background: color-mix(in srgb, #3b82f6 14%, transparent); }
+    .meta { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-bottom: 8px; font-size: 11px; color: color-mix(in srgb, CanvasText 66%, transparent); }
+    .description, .text { white-space: pre-wrap; line-height: 1.55; font-size: 12px; }
+    .description { margin: 7px 0 11px; padding: 9px 10px; border-left: 3px solid color-mix(in srgb, #2f6fed 55%, transparent); background: color-mix(in srgb, CanvasText 5%, transparent); }
+    .result-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+    .field { min-width: 0; padding: 9px 10px; border-radius: 8px; background: color-mix(in srgb, CanvasText 5%, transparent); }
+    .field.wide { grid-column: 1 / -1; }
+    .label { margin-bottom: 4px; font-size: 10px; font-weight: 800; color: color-mix(in srgb, CanvasText 58%, transparent); }
+    ul { margin: 4px 0 0; padding-left: 18px; }
+    li { margin: 2px 0; font-size: 12px; word-break: break-all; }
+    .summary-card { margin-top: 10px; padding: 13px; border-radius: 11px; background: Canvas; border: 1px solid color-mix(in srgb, CanvasText 14%, transparent); }
+    pre { max-height: 220px; overflow: auto; margin: 7px 0 0; padding: 10px; border-radius: 8px; background: color-mix(in srgb, CanvasText 7%, transparent); white-space: pre-wrap; word-break: break-word; font: 11px/1.5 ui-monospace, SFMono-Regular, Consolas, monospace; }
+    footer { padding: 11px 12px; border-top: 1px solid color-mix(in srgb, CanvasText 14%, transparent); background: Canvas; }
+    textarea { width: 100%; min-height: 58px; resize: vertical; padding: 8px 9px; border: 1px solid color-mix(in srgb, CanvasText 20%, transparent); border-radius: 8px; background: Canvas; color: CanvasText; }
+    .actions { display: flex; justify-content: flex-end; align-items: center; flex-wrap: wrap; gap: 8px; margin-top: 9px; }
+    button { border: 0; border-radius: 8px; padding: 9px 13px; cursor: pointer; font-weight: 700; }
+    button:disabled { cursor: not-allowed; opacity: .55; }
+    button.primary { color: white; background: #2f6fed; }
+    button.secondary { color: CanvasText; background: color-mix(in srgb, CanvasText 9%, transparent); }
+    button.danger { color: white; background: #c2410c; }
+    #status { margin-right: auto; }
+    dialog { width: min(560px, calc(100vw - 34px)); padding: 0; color: CanvasText; background: Canvas; border: 1px solid color-mix(in srgb, CanvasText 22%, transparent); border-radius: 13px; box-shadow: 0 20px 60px rgba(0,0,0,.32); }
+    dialog::backdrop { background: rgba(0,0,0,.55); }
+    .modal-head, .modal-body, .modal-actions { padding: 14px 16px; }
+    .modal-head { border-bottom: 1px solid color-mix(in srgb, CanvasText 14%, transparent); }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 8px; border-top: 1px solid color-mix(in srgb, CanvasText 14%, transparent); }
+    .target { margin: 10px 0; padding: 11px; border-radius: 9px; background: color-mix(in srgb, #3b82f6 11%, transparent); font: 600 13px ui-monospace, SFMono-Regular, Consolas, monospace; word-break: break-all; }
+    .warning { margin: 9px 0; padding: 10px; border-radius: 8px; color: #b45309; background: color-mix(in srgb, #f59e0b 14%, transparent); font-size: 12px; }
+    .confirm-line { display: flex; gap: 9px; align-items: flex-start; margin-top: 13px; font-size: 12px; line-height: 1.45; }
+    .empty { padding: 28px; text-align: center; color: color-mix(in srgb, CanvasText 60%, transparent); }
+    @media (max-width: 650px) { .result-grid { grid-template-columns: 1fr; } .field.wide { grid-column: auto; } }
+  </style>
+</head>
+<body>
+<main class="shell">
+  <header>
+    <h1>Req2Code 开发与测试审核</h1>
+    <div id="subtitle" class="muted">正在加载审核数据…</div>
+    <div id="badges" class="badges"></div>
+  </header>
+  <section id="content" class="content"><div class="empty">正在加载…</div></section>
+  <footer>
+    <label for="comment" class="muted">审核意见（要求修改时建议填写）</label>
+    <textarea id="comment" placeholder="例如：补充边界测试，或调整某个交互细节"></textarea>
+    <div class="actions">
+      <span id="status" class="muted">尚未审核</span>
+      <button id="changes" class="secondary" type="button">要求继续修改</button>
+      <button id="approve" class="primary" type="button">审核通过，进入发布确认</button>
+    </div>
+  </footer>
+</main>
+
+<dialog id="publishDialog">
+  <div class="modal-head"><h2>第二次确认：是否提交并推送？</h2><div class="muted">这一步才会真正创建 Git 提交并执行非强制推送。</div></div>
+  <div class="modal-body">
+    <div>审核通过后计划发布到：</div>
+    <div id="publishTarget" class="target"></div>
+    <div id="branchWarning" class="warning" hidden>这是受保护的主分支（main/master）。请确认团队流程允许直接推送到该分支。</div>
+    <div class="muted">提交前 Req2Code 会重新校验当前分支、基准 SHA、远程地址、差异指纹和远程分支 SHA；任一变化都会停止发布。</div>
+    <label class="confirm-line"><input id="publishCheck" type="checkbox"><span>我已审核上述每个需求/缺陷的实现和测试结果，并确认提交、推送这个准确变更集。</span></label>
+  </div>
+  <div class="modal-actions">
+    <button id="cancelPublish" class="secondary" type="button">返回审核</button>
+    <button id="confirmPublish" class="danger" type="button" disabled>确认提交并推送</button>
+  </div>
+</dialog>
+
+<script>
+  const pending = new Map();
+  let requestId = 1;
+  let data = null;
+  let runId = "";
+  let hydrationPromise = null;
+  const reviewMetaKey = "req2code/development-review";
+  const contentEl = document.getElementById("content");
+  const statusEl = document.getElementById("status");
+  const approveEl = document.getElementById("approve");
+  const changesEl = document.getElementById("changes");
+  const dialogEl = document.getElementById("publishDialog");
+  const publishCheckEl = document.getElementById("publishCheck");
+  const confirmPublishEl = document.getElementById("confirmPublish");
+
+  function request(method, params, timeoutMs = 15000) {
+    const id = requestId++;
+    window.parent.postMessage({ jsonrpc: "2.0", id, method, params }, "*");
+    return new Promise((resolve, reject) => {
+      const timeout = window.setTimeout(() => { pending.delete(id); reject(new Error(`${method} 请求超时`)); }, timeoutMs);
+      pending.set(id, {
+        resolve: value => { window.clearTimeout(timeout); resolve(value); },
+        reject: error => { window.clearTimeout(timeout); reject(error); },
+      });
+    });
+  }
+
+  function notify(method, params = {}) { window.parent.postMessage({ jsonrpc: "2.0", method, params }, "*"); }
+
+  function toolEnvelopes(result) {
+    const queue = [result]; const values = []; const seen = new Set();
+    const keys = ["result", "structuredContent", "toolOutput", "toolResponseMetadata", "mcp_tool_result", "call_tool_result", "mcpToolResult", "callToolResult"];
+    while (queue.length) {
+      let value = queue.shift();
+      if (typeof value === "string" && value.trim().startsWith("{")) { try { value = JSON.parse(value); } catch (_) { continue; } }
+      if (!value || typeof value !== "object" || seen.has(value)) continue;
+      seen.add(value); values.push(value);
+      for (const key of keys) if (value[key] !== undefined) queue.push(value[key]);
+    }
+    return values;
+  }
+
+  function outputOf(result) {
+    const values = toolEnvelopes(result);
+    return values.find(value => value.status && value.run_id) || result?.structuredContent || result;
+  }
+
+  function reviewOf(result) {
+    for (const value of toolEnvelopes(result)) {
+      const review = value?._meta?.[reviewMetaKey] || value?.meta?.[reviewMetaKey] || value?.[reviewMetaKey];
+      if (review?.run_id) return review;
+      if (value?.run_id && Array.isArray(value?.work_items)) return value;
+    }
+    return null;
+  }
+
+  function runIdOf(result) {
+    for (const value of toolEnvelopes(result)) if (typeof value.run_id === "string" && value.run_id) return value.run_id;
+    return "";
+  }
+
+  async function callMcpTool(name, arguments_, timeoutMs = 15000) {
+    if (typeof window.openai?.callTool === "function") return window.openai.callTool(name, arguments_);
+    return request("tools/call", { name, arguments: arguments_ }, timeoutMs);
+  }
+
+  async function sendFollowUp(message) {
+    if (typeof window.openai?.sendFollowUpMessage === "function") return window.openai.sendFollowUpMessage({ prompt: message });
+    return request("ui/message", { role: "user", content: [{ type: "text", text: message }] });
+  }
+
+  function node(tag, className = "", text = "") {
+    const el = document.createElement(tag); if (className) el.className = className; if (text) el.textContent = text; return el;
+  }
+
+  function addField(grid, label, value, wide = false) {
+    const field = node("div", `field${wide ? " wide" : ""}`);
+    field.append(node("div", "label", label), node("div", "text", value || "（未单独提供）")); grid.append(field);
+  }
+
+  function addFiles(grid, files) {
+    const field = node("div", "field wide"); field.append(node("div", "label", "关联变更文件"));
+    const list = node("ul");
+    for (const file of files || []) list.append(node("li", "", file));
+    if (!list.children.length) list.append(node("li", "", "未单独关联文件"));
+    field.append(list); grid.append(field);
+  }
+
+  function normalizedType(item) { return ["bug", "defect"].includes(String(item?.type || "").toLowerCase()) ? "bug" : "requirement"; }
+
+  function render() {
+    if (!data) return;
+    const waiting = data.status === "waiting_approval";
+    document.getElementById("subtitle").textContent = `运行 ${data.run_id} · ${data.work_items.length} 个工作项 · 当前没有提交或推送`;
+    const badges = document.getElementById("badges"); badges.replaceChildren();
+    badges.append(node("span", `badge ${waiting ? "ok" : "warn"}`, waiting ? "等待人工审核" : data.status));
+    badges.append(node("span", "badge lock", data.push_locked ? "提交与推送已锁定" : "发布处理中"));
+    badges.append(node("span", "badge", `${data.changed_files.length} 个变更文件`));
+    badges.append(node("span", `badge ${data.test_result?.passed ? "ok" : "warn"}`, data.test_result?.passed ? "相关测试通过" : "测试未通过"));
+    contentEl.replaceChildren();
+    const results = new Map((data.item_results || []).map(result => [String(result.item_id || ""), result]));
+    for (const item of data.work_items) {
+      const card = node("article", "item"); const head = node("div", "item-head"); const kind = normalizedType(item);
+      head.append(node("span", "item-id", item.id || ""), node("span", `type ${kind === "bug" ? "bug" : "story"}`, kind === "bug" ? "缺陷" : "需求"), node("strong", "", item.title || "（无标题）"));
+      const meta = node("div", "meta"); const details = item.details || {};
+      for (const [label, value] of [["状态", details.status], ["优先级", details.priority], ["严重程度", details.severity], ["负责人", details.owner], ["报告人", details.reporter], ["模块", details.module], ["迭代", details.iteration]]) if (value) meta.append(node("span", "", `${label}：${value}`));
+      card.append(head, meta);
+      if (item.description) card.append(node("div", "description", item.description));
+      const result = results.get(String(item.id || "")) || {};
+      const grid = node("div", "result-grid");
+      addField(grid, "解决方案 / 根因", result.solution || data.implementation_plan, true);
+      addField(grid, "实际修改内容", result.changes || data.implementation_summary, true);
+      addFiles(grid, result.changed_files || data.changed_files);
+      addField(grid, "测试证据", result.test_evidence || data.test_result?.details, true);
+      addField(grid, "验收结论", result.acceptance_result);
+      addField(grid, "剩余风险", result.residual_risks);
+      card.append(grid); contentEl.append(card);
+    }
+    const overall = node("section", "summary-card"); overall.append(node("h2", "", "总体测试与审计信息"));
+    const overallText = [
+      `测试结果：${data.test_result?.passed ? "通过" : "未通过"}`,
+      `证据来源：${data.test_result?.source || "未报告"}`,
+      `覆盖率：${data.test_result?.coverage == null ? "未报告" : `${data.test_result.coverage}%`}`,
+      `收尾尝试次数：${data.verification_count}`,
+      `差异指纹：${data.diff_hash || "未生成"}`,
+      `审计快照：${data.report_path || "未生成"}`,
+    ].join("\n");
+    overall.append(node("div", "text", overallText));
+    if (data.test_result?.details) overall.append(node("pre", "", data.test_result.details));
+    contentEl.append(overall);
+    approveEl.disabled = !waiting; changesEl.disabled = !waiting;
+    statusEl.textContent = waiting ? "请逐项审核后作出决定" : `当前状态 ${data.status}，不能发布`;
+  }
+
+  async function hydrate() {
+    if (data || !runId || hydrationPromise) return hydrationPromise;
+    hydrationPromise = (async () => {
+      try { acceptToolResult(await callMcpTool("get_development_review_for_ui", { run_id: runId })); }
+      catch (error) { statusEl.textContent = `加载失败：${error?.message || error}`; }
+      finally { hydrationPromise = null; }
+    })();
+    return hydrationPromise;
+  }
+
+  function acceptToolResult(result) {
+    runId = runIdOf(result) || runId;
+    const review = reviewOf(result);
+    if (!review) { if (runId) void hydrate(); return false; }
+    data = review; runId = review.run_id; render(); return true;
+  }
+
+  approveEl.addEventListener("click", () => {
+    if (!data || data.status !== "waiting_approval") return;
+    document.getElementById("publishTarget").textContent = data.planned_publication_target;
+    document.getElementById("branchWarning").hidden = !data.protected_branch_warning;
+    publishCheckEl.checked = false; confirmPublishEl.disabled = true;
+    if (typeof dialogEl.showModal === "function") dialogEl.showModal(); else dialogEl.setAttribute("open", "");
+  });
+
+  document.getElementById("cancelPublish").addEventListener("click", () => {
+    if (typeof dialogEl.close === "function") dialogEl.close(); else dialogEl.removeAttribute("open");
+  });
+  publishCheckEl.addEventListener("change", () => { confirmPublishEl.disabled = !publishCheckEl.checked; });
+
+  confirmPublishEl.addEventListener("click", async () => {
+    confirmPublishEl.disabled = true; statusEl.textContent = "正在重新校验并提交、推送…";
+    try {
+      const raw = await callMcpTool("publish_reviewed_run_for_ui", {
+        run_id: data.run_id,
+        publish_nonce: data.publish_nonce,
+        confirmation: "确认提交并推送",
+        comment: document.getElementById("comment").value,
+      }, 300000);
+      const result = outputOf(raw);
+      if (typeof dialogEl.close === "function") dialogEl.close(); else dialogEl.removeAttribute("open");
+      data.status = result.status || "completed"; data.push_locked = false; data.commit_sha = result.commit_sha || ""; render();
+      statusEl.textContent = `已提交并推送 ${result.commit_sha || ""} 到 ${result.published_target || data.planned_publication_target}`;
+      await sendFollowUp(`Req2Code 运行 ${data.run_id} 已由用户在审核界面完成第二次确认并发布。commit_sha=${result.commit_sha || ""}，published_target=${result.published_target || data.planned_publication_target}`);
+    } catch (error) {
+      statusEl.textContent = `发布失败：${error?.message || error}`; confirmPublishEl.disabled = !publishCheckEl.checked;
+    }
+  });
+
+  changesEl.addEventListener("click", async () => {
+    if (!data || data.status !== "waiting_approval") return;
+    changesEl.disabled = true; approveEl.disabled = true; statusEl.textContent = "正在退回继续修改…";
+    const comment = document.getElementById("comment").value.trim();
+    try {
+      const raw = await callMcpTool("request_development_changes_for_ui", { run_id: data.run_id, publish_nonce: data.publish_nonce, comment });
+      const result = outputOf(raw); data.status = result.status || "changes_requested"; render();
+      statusEl.textContent = "已退回代码智能体继续修改；提交与推送仍保持锁定";
+      await sendFollowUp(`Req2Code 人工审核要求继续修改。run_id=${data.run_id}\n审核意见=${result.comment || comment || "请重新检查实现与测试"}\n请继续当前 req2code-workflow，完成修改和测试后重新调用 finalize_development_run。禁止提交或推送。`);
+    } catch (error) {
+      statusEl.textContent = `退回失败：${error?.message || error}`; changesEl.disabled = false; approveEl.disabled = false;
+    }
+  });
+
+  window.addEventListener("message", event => {
+    if (event.source !== window.parent) return; const message = event.data;
+    if (!message || message.jsonrpc !== "2.0") return;
+    if (message.id !== undefined && pending.has(message.id)) { const job = pending.get(message.id); pending.delete(message.id); message.error ? job.reject(message.error) : job.resolve(message.result); return; }
+    if (message.method === "ui/notifications/tool-result") acceptToolResult(message.params);
+  }, { passive: true });
+
+  window.addEventListener("openai:set_globals", event => {
+    const globals = event.detail?.globals || window.openai;
+    acceptToolResult({ structuredContent: globals?.toolOutput, toolResponseMetadata: globals?.toolResponseMetadata });
+  }, { passive: true });
+
+  async function initializeMcpApps() {
+    try {
+      await request("ui/initialize", { protocolVersion: "2026-01-26", appCapabilities: {}, appInfo: { name: "req2code-development-review", version: "0.8.0" } }, 5000);
+      notify("ui/notifications/initialized");
+    } catch (_) { /* Compatibility hosts hydrate through window.openai. */ }
+  }
+
+  function initialize() {
+    acceptToolResult({ structuredContent: window.openai?.toolOutput, toolResponseMetadata: window.openai?.toolResponseMetadata });
+    window.setTimeout(() => { if (!data) statusEl.textContent = "审核数据加载超时，请重新打开该运行的审核界面"; }, 15000);
+    void initializeMcpApps();
+  }
+  initialize();
+</script>
+</body>
+</html>

@@ -1,0 +1,174 @@
+# Req2Code configuration (schema_version=8)
+#
+# source_profiles.* 可在对话内 UI 中选择的命名需求源配置
+# tapd.*        需求源配置 (TAPD)
+# feishu.*      需求源配置 (飞书文档/多维表格)
+# message.*     通知配置 (企业微信/钉钉/webhook)
+# review.*      审批配置
+# engines.*     兼容模式的嵌套执行引擎配置 (默认 Skill/MCP 流程不使用)
+# testing.*     测试与覆盖率配置
+# project_memory.* 项目理解、增量记忆、镜像缓存与会话复用
+# system.*      系统配置 (日志)
+#
+# token/secret/webhook 等敏感值会在 `config list` 中自动脱敏。
+# 不要把真实密钥提交到代码仓库。
+
+schema_version: 8
+source: tapd
+source_profiles: []
+tapd:
+  enabled: true
+  base_url: https://api.tapd.cn
+  # oauth2 = 开放应用 app_id/app_secret；basic = API 账号/API 口令
+  auth_mode: oauth2
+  app_id: REPLACE_ME_TAPD_APP_ID
+  app_secret: REPLACE_ME_TAPD_APP_SECRET
+  workspace_id: REPLACE_ME_WORKSPACE_ID
+  token_endpoint: /tokens/request_token
+  latest_endpoint: /stories
+  detail_endpoint: /stories
+  field_mapping:
+    list_path: data
+    detail_path: data
+    id_field: Story.id
+    title_field: Story.name
+    description_field: Story.description
+    type_field: Story.type
+  bug_latest_endpoint: /bugs
+  bug_detail_endpoint: /bugs
+  bug_field_mapping:
+    list_path: data
+    detail_path: data
+    id_field: Bug.id
+    title_field: Bug.title
+    description_field: Bug.description
+    type_field: Bug.type
+  default_item_type: story
+  auth_scheme: Bearer
+  auth_header_name: Authorization
+  timeout_seconds: 20
+  retries: 2
+  retry_backoff_seconds: 1.0
+  rate_limit_qps: 5.0
+  error_stats_file: .req2code/tapd_error_stats.yaml
+feishu:
+  enabled: true
+  base_url: https://open.feishu.cn
+  # tenant = 自建应用 App ID/App Secret
+  auth_mode: tenant
+  app_id: REPLACE_ME_FEISHU_APP_ID
+  app_secret: REPLACE_ME_FEISHU_APP_SECRET
+  document_url: ''
+  # auto 会根据 /docx/、/wiki/、/base/ 链接识别。
+  resource_type: auto
+  # auto 优先把文档原生表格行转成工作项，其次按标题章节解析。
+  parse_mode: auto
+  table_id: ''
+  view_id: ''
+  sheet_id: ''
+  field_mapping:
+    id_field: ''
+    title_field: ''
+    description_field: ''
+    type_field: ''
+    status_field: ''
+    priority_field: ''
+    severity_field: ''
+    owner_field: ''
+    reporter_field: ''
+    acceptance_field: ''
+    updated_field: ''
+  timeout_seconds: 20
+  retries: 2
+  retry_backoff_seconds: 1.0
+mock:
+  enabled: true
+git:
+  repo_url: ''
+  base_branch: test
+  target_branch: test
+  remote_name: origin
+  branch_prefix: req2code
+  commit_author: req2code-bot
+  commit_email: req2code-bot@localhost
+  auto_init_if_missing: false
+  # Git 网络或凭据异常时，任务准备不会无限等待。
+  command_timeout_seconds: 120
+message:
+  provider: wechat_work
+  webhook: REPLACE_ME_MESSAGE_WEBHOOK
+  reviewer: qa_reviewer
+  timeout_seconds: 10
+  default_level: normal
+  templates:
+    normal: '[{level}] {content}'
+    warning: '[{level}] {content}'
+    critical: '[{level}] {content}
+
+      artifact={artifact}'
+engines:
+  active: claude_code
+  cursor_enabled: true
+  claude_code_enabled: true
+  codex_enabled: true
+  cursor:
+    command: cursor-agent -p --force --output-format stream-json {prompt}
+    model: ''
+    auth_token: ''
+    auth_env_var: ''
+    prompt_via_stdin: false
+    working_dir: .
+    timeout_seconds: 1800
+    retries: 1
+  claude_code:
+    command: claude -p --output-format stream-json
+    model: ''
+    auth_token: ''
+    auth_env_var: ANTHROPIC_API_KEY
+    prompt_via_stdin: true
+    working_dir: .
+    timeout_seconds: 1800
+    retries: 1
+  codex:
+    command: codex exec --json --sandbox workspace-write -
+    model: ''
+    auth_token: ''
+    auth_env_var: CODEX_API_KEY
+    prompt_via_stdin: true
+    working_dir: .
+    timeout_seconds: 1800
+    retries: 1
+testing:
+  script_command: ''
+  unit_command: python -m pytest -q
+  min_coverage: 80.0
+  max_fix_attempts: 2
+  coverage_command: python -m coverage run -m pytest -q && python -m coverage report
+review:
+  mode: manual
+  approvals_file: approvals.yaml
+  callback_secret: REPLACE_ME_APPROVAL_CALLBACK_SECRET
+  signature_header: X-Req2Code-Signature
+  timestamp_header: X-Req2Code-Timestamp
+  nonce_header: X-Req2Code-Nonce
+  timestamp_tolerance_seconds: 300
+  replay_store_file: replay_nonces.yaml
+  ip_allowlist:
+  - 127.0.0.1
+  - ::1
+  lint_command: ''
+  security_scan_command: ''
+  ai_review_enabled: false
+  require_human_approval: true
+  approval_base_url: http://127.0.0.1:8088
+project_memory:
+  enabled: true
+  max_context_chars: 14000
+  generate_candidate: true
+  promote_after_approval: true
+  use_mirror_cache: true
+  resume_engine_sessions: true
+system:
+  log_level: INFO
+  log_file: ''
+  state_dir: ~/.req2code

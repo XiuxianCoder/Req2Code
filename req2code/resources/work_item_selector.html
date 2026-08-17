@@ -1,0 +1,886 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    :root { color-scheme: light dark; font-family: ui-sans-serif, system-ui, "Segoe UI", sans-serif; }
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 14px; background: transparent; color: CanvasText; }
+    .shell { border: 1px solid color-mix(in srgb, CanvasText 18%, transparent); border-radius: 14px; overflow: hidden; }
+    header { padding: 15px 17px 12px; background: color-mix(in srgb, Canvas 94%, #2f6fed 6%); }
+    h1 { margin: 0 0 5px; font-size: 18px; }
+    h2 { margin: 0 0 5px; font-size: 15px; }
+    .hint, .status, .muted { color: color-mix(in srgb, CanvasText 65%, transparent); font-size: 12px; line-height: 1.5; }
+    .summary { margin-top: 6px; font-size: 12px; color: color-mix(in srgb, CanvasText 76%, transparent); }
+    [hidden] { display: none !important; }
+    .screen { padding: 12px; }
+    .toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 10px; }
+    .profiles { display: grid; gap: 9px; }
+    .platforms { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+    .platform-card { min-height: 92px; padding: 14px; text-align: left; border: 1px solid color-mix(in srgb, CanvasText 14%, transparent); background: color-mix(in srgb, CanvasText 4%, transparent); color: CanvasText; }
+    .platform-card strong { display: block; margin-bottom: 5px; font-size: 15px; }
+    .platform-card span { color: color-mix(in srgb, CanvasText 62%, transparent); font-size: 11px; line-height: 1.45; }
+    .profile { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; padding: 12px; border: 1px solid color-mix(in srgb, CanvasText 14%, transparent); border-radius: 10px; }
+    .profile-actions { display: flex; flex-wrap: wrap; gap: 7px; }
+    .tag { display: inline-block; margin-left: 6px; padding: 1px 6px; border-radius: 999px; color: #2563eb; background: color-mix(in srgb, #3b82f6 14%, transparent); font-size: 10px; }
+    .notice { margin-top: 10px; padding: 9px 10px; border-radius: 8px; background: color-mix(in srgb, #2f6fed 8%, transparent); color: color-mix(in srgb, CanvasText 76%, transparent); font-size: 11px; line-height: 1.55; }
+    .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 12px; }
+    .field-group { display: grid; gap: 5px; }
+    .field-group.full { grid-column: 1 / -1; }
+    .field-group label { font-size: 12px; font-weight: 650; }
+    .inline-control { display: grid; grid-template-columns: 1fr auto; gap: 7px; }
+    input[type="text"], input[type="password"], input[type="search"], select { width: 100%; padding: 8px 10px; border: 1px solid color-mix(in srgb, CanvasText 22%, transparent); border-radius: 8px; background: Canvas; color: CanvasText; }
+    input[type="search"] { flex: 1; min-width: 160px; }
+    button { border: 0; border-radius: 8px; padding: 8px 12px; cursor: pointer; font-weight: 650; }
+    button.secondary { background: color-mix(in srgb, CanvasText 9%, transparent); color: CanvasText; }
+    button.primary { background: #2f6fed; color: white; }
+    button:disabled { cursor: not-allowed; opacity: .55; }
+    .tools { display: flex; flex-wrap: wrap; gap: 8px; padding: 10px 12px; border-block: 1px solid color-mix(in srgb, CanvasText 14%, transparent); }
+    #items { max-height: 390px; overflow: auto; padding: 8px; }
+    label.item { display: grid; grid-template-columns: auto 1fr; gap: 10px; padding: 11px 10px; border-radius: 9px; cursor: pointer; }
+    label.item:hover { background: color-mix(in srgb, CanvasText 7%, transparent); }
+    .title { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 14px; line-height: 1.4; }
+    .meta { display: flex; flex-wrap: wrap; gap: 5px 12px; margin-top: 5px; font-size: 11px; color: color-mix(in srgb, CanvasText 67%, transparent); }
+    .submeta { margin-top: 4px; font-size: 10px; color: color-mix(in srgb, CanvasText 52%, transparent); }
+    .description { margin-top: 5px; font-size: 11px; line-height: 1.45; color: color-mix(in srgb, CanvasText 72%, transparent); }
+    .key-fields { display: flex; flex-wrap: wrap; gap: 5px 10px; margin-top: 6px; font-size: 10px; color: color-mix(in srgb, CanvasText 62%, transparent); }
+    .badge { display: inline-block; color: #2f6fed; font-weight: 750; }
+    .type-badge { padding: 1px 6px; border-radius: 999px; font-size: 10px; font-weight: 700; }
+    .type-bug { color: #c2410c; background: color-mix(in srgb, #f97316 15%, transparent); }
+    .type-story { color: #2563eb; background: color-mix(in srgb, #3b82f6 14%, transparent); }
+    footer { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; border-top: 1px solid color-mix(in srgb, CanvasText 14%, transparent); }
+    .empty { padding: 24px; text-align: center; color: color-mix(in srgb, CanvasText 60%, transparent); }
+    @media (max-width: 620px) {
+      .form-grid { grid-template-columns: 1fr; }
+      .inline-control { grid-template-columns: 1fr; }
+      .field-group.full { grid-column: auto; }
+      .profile { grid-template-columns: 1fr; }
+      .platforms { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<main class="shell">
+  <header>
+    <h1 id="pageTitle">Req2Code</h1>
+    <div id="pageHint" class="hint">正在读取本机配置…</div>
+    <div id="summary" class="summary"></div>
+  </header>
+
+  <section id="platformScreen" class="screen" hidden>
+    <div class="platforms">
+      <button id="chooseTapd" class="platform-card" type="button"><strong>TAPD</strong><span>读取项目中的待处理需求和缺陷</span></button>
+      <button id="chooseFeishu" class="platform-card" type="button"><strong>飞书云文档</strong><span>读取文档表格、标题段落和多维表格</span></button>
+      <button id="chooseMock" class="platform-card" type="button"><strong>Mock 演示</strong><span>无需凭据，用于本地体验流程</span></button>
+    </div>
+    <div class="notice">先选择需求平台，再选择该平台下的命名配置。凭据和未确认候选项只在 Req2Code 本地私有组件中处理。</div>
+  </section>
+
+  <section id="profileScreen" class="screen" hidden>
+    <div class="toolbar">
+      <button id="newProfile" class="primary" type="button">添加配置</button>
+      <button id="refreshProfiles" class="secondary" type="button">刷新配置</button>
+      <button id="changeProvider" class="secondary" type="button">切换平台</button>
+    </div>
+    <div id="profiles" class="profiles"></div>
+    <div class="notice">连接信息由 Req2Code 在本机验证和保存。配置档案与凭据不会添加到发给代码智能体的开发提示词中。</div>
+  </section>
+
+  <section id="configScreen" class="screen" hidden>
+    <form id="configForm">
+      <input id="profileId" type="hidden">
+      <div class="form-grid">
+        <div class="field-group full">
+          <label for="profileName">项目配置名称</label>
+          <input id="profileName" type="text" required placeholder="例如：产品研发 TAPD">
+        </div>
+        <div class="field-group">
+          <label for="provider">需求平台</label>
+          <select id="provider">
+            <option value="tapd">TAPD</option>
+            <option value="feishu">飞书云文档</option>
+            <option value="mock">Mock（本地演示）</option>
+          </select>
+        </div>
+        <div id="authGroup" class="field-group">
+          <label for="authMode">TAPD 接入方式</label>
+          <select id="authMode">
+            <option value="oauth2">开放应用（client_id / client_secret）</option>
+            <option value="basic">API 账号（API user / password）</option>
+          </select>
+        </div>
+        <div id="baseUrlGroup" class="field-group full">
+          <label for="baseUrl">API 地址</label>
+          <input id="baseUrl" type="text" value="https://api.tapd.cn" placeholder="https://api.tapd.cn">
+        </div>
+        <div id="workspaceGroup" class="field-group full">
+          <label for="workspaceId">TAPD 项目 ID 或项目地址</label>
+          <input id="workspaceId" type="text" placeholder="12345678 或 https://www.tapd.cn/12345678/...">
+        </div>
+        <div id="feishuDocumentUrlGroup" class="field-group full" hidden>
+          <label for="documentUrl">飞书文档链接</label>
+          <input id="documentUrl" type="text" placeholder="https://example.feishu.cn/docx/...、/wiki/... 或 /base/....">
+        </div>
+        <div id="feishuResourceTypeGroup" class="field-group" hidden>
+          <label for="resourceType">资源类型</label>
+          <select id="resourceType">
+            <option value="auto">根据链接自动识别</option>
+            <option value="docx">飞书文档</option>
+            <option value="wiki">知识库文档</option>
+            <option value="bitable">多维表格</option>
+            <option value="spreadsheet">电子表格</option>
+          </select>
+        </div>
+        <div id="feishuParseModeGroup" class="field-group" hidden>
+          <label for="parseMode">文档解析方式</label>
+          <select id="parseMode">
+            <option value="auto">自动：优先表格，其次标题</option>
+            <option value="table_rows">每个表格行作为工作项</option>
+            <option value="headings">每个标题章节作为工作项</option>
+            <option value="whole_document">整篇文档作为一个工作项</option>
+          </select>
+        </div>
+        <div id="feishuTableIdGroup" class="field-group" hidden>
+          <label for="tableId">数据表（可选）</label>
+          <div class="inline-control">
+            <input id="tableId" type="text" list="feishuTableOptions" placeholder="使用链接指定的数据表">
+            <button id="inspectFeishuBitable" class="secondary" type="button">读取数据表</button>
+          </div>
+          <datalist id="feishuTableOptions"></datalist>
+        </div>
+        <div id="feishuViewIdGroup" class="field-group" hidden>
+          <label for="viewId">视图（可选）</label>
+          <input id="viewId" type="text" list="feishuViewOptions" placeholder="留空时读取该数据表的全部记录">
+          <datalist id="feishuViewOptions"></datalist>
+          <div id="feishuInspectStatus" class="muted"></div>
+        </div>
+        <div id="feishuSheetIdGroup" class="field-group" hidden>
+          <label for="sheetId">工作表 ID（可选）</label>
+          <input id="sheetId" type="text" placeholder="留空时读取链接指定或第一个可见工作表">
+        </div>
+        <div id="feishuFieldMappingGroup" class="field-group full" hidden>
+          <label>表格字段映射（可选；留空自动识别）</label>
+          <div class="form-grid">
+            <input id="feishuIdField" type="text" placeholder="编号字段，例如：需求编号">
+            <input id="feishuTitleField" type="text" placeholder="标题字段，例如：需求名称">
+            <input id="feishuDescriptionField" type="text" placeholder="描述字段，例如：问题描述">
+            <input id="feishuTypeField" type="text" placeholder="类型字段，例如：工作项类型">
+            <input id="feishuStatusField" type="text" placeholder="状态字段，例如：处理状态">
+            <input id="feishuPriorityField" type="text" placeholder="优先级字段">
+            <input id="feishuSeverityField" type="text" placeholder="严重程度字段">
+            <input id="feishuOwnerField" type="text" placeholder="负责人字段">
+            <input id="feishuReporterField" type="text" placeholder="报告人字段">
+            <input id="feishuAcceptanceField" type="text" placeholder="验收标准字段">
+            <input id="feishuUpdatedField" type="text" placeholder="更新时间字段">
+          </div>
+        </div>
+        <div id="appIdGroup" class="field-group">
+          <label id="appIdLabel" for="appId">client_id</label>
+          <input id="appId" type="password" autocomplete="new-password" placeholder="编辑时留空表示保留原值">
+        </div>
+        <div id="secretGroup" class="field-group">
+          <label id="secretLabel" for="appSecret">client_secret</label>
+          <input id="appSecret" type="password" autocomplete="new-password" placeholder="编辑时留空表示保留原值">
+        </div>
+      </div>
+      <div id="configNotice" class="notice">保存前会验证需求源连接。密钥输入框仅传给 Req2Code 的本地私有工具，不会写入聊天消息或审核报告。</div>
+      <div class="toolbar" style="margin-top:10px;margin-bottom:0">
+        <button id="saveProfile" class="primary" type="submit">验证、保存并加载工作项</button>
+        <button id="cancelConfig" class="secondary" type="button">返回</button>
+        <span id="configStatus" class="status"></span>
+      </div>
+    </form>
+  </section>
+
+  <section id="selectorScreen" hidden>
+    <div class="tools">
+      <input id="search" type="search" placeholder="搜索编号、标题、负责人或内容" aria-label="搜索工作项">
+      <select id="typeFilter" aria-label="按工作项类型筛选">
+        <option value="all">全部类型</option>
+        <option value="requirement">只看需求</option>
+        <option value="bug">只看缺陷</option>
+      </select>
+      <button id="all" class="secondary" type="button">全选可见</button>
+      <button id="retryAnalysis" class="primary" type="button" hidden>重新 AI 解析</button>
+      <button id="changeProfile" class="secondary" type="button">切换项目</button>
+    </div>
+    <div id="items"><div class="empty">正在加载…</div></div>
+    <footer><div id="status" class="status">尚未选择</div><button id="confirm" class="primary" type="button" disabled>确认选择并开始开发</button></footer>
+  </section>
+</main>
+<script>
+  const pending = new Map();
+  let requestId = 1;
+  let data = null;
+  let launcher = null;
+  let loadTimer = null;
+  let selectionId = "";
+  let hydrationPromise = null;
+  let hydrationError = "";
+  let activeProvider = "";
+  let activeAnalysisId = "";
+  let activeProfileId = "";
+  let openedAnalysisId = "";
+  const selected = new Set();
+  const selectionMetaKey = "req2code/selection";
+  const launcherMetaKey = "req2code/launcher";
+  const analysisMetaKey = "req2code/feishu-analysis";
+  const platformScreenEl = document.getElementById("platformScreen");
+  const profileScreenEl = document.getElementById("profileScreen");
+  const configScreenEl = document.getElementById("configScreen");
+  const selectorScreenEl = document.getElementById("selectorScreen");
+  const profilesEl = document.getElementById("profiles");
+  const itemsEl = document.getElementById("items");
+  const searchEl = document.getElementById("search");
+  const typeFilterEl = document.getElementById("typeFilter");
+  const summaryEl = document.getElementById("summary");
+  const statusEl = document.getElementById("status");
+  const confirmEl = document.getElementById("confirm");
+  const retryAnalysisEl = document.getElementById("retryAnalysis");
+  const configStatusEl = document.getElementById("configStatus");
+
+  function request(method, params, timeoutMs = 120000) {
+    const id = requestId++;
+    window.parent.postMessage({ jsonrpc: "2.0", id, method, params }, "*");
+    return new Promise((resolve, reject) => {
+      const timeout = window.setTimeout(() => {
+        pending.delete(id);
+        reject(new Error(`${method} 请求超时`));
+      }, timeoutMs);
+      pending.set(id, {
+        resolve: value => { window.clearTimeout(timeout); resolve(value); },
+        reject: error => { window.clearTimeout(timeout); reject(error); },
+      });
+    });
+  }
+
+  function notify(method, params = {}) {
+    window.parent.postMessage({ jsonrpc: "2.0", method, params }, "*");
+  }
+
+  function toolEnvelopes(result) {
+    const queue = [result];
+    const values = [];
+    const seen = new Set();
+    const nestedKeys = [
+      "result", "structuredContent", "toolOutput", "toolResponseMetadata",
+      "mcp_tool_result", "call_tool_result", "mcpToolResult", "callToolResult",
+    ];
+    while (queue.length) {
+      let value = queue.shift();
+      if (typeof value === "string" && value.trim().startsWith("{")) {
+        try { value = JSON.parse(value); } catch (_) { continue; }
+      }
+      if (!value || typeof value !== "object" || seen.has(value)) continue;
+      seen.add(value);
+      values.push(value);
+      for (const key of nestedKeys) if (value[key] !== undefined) queue.push(value[key]);
+    }
+    return values;
+  }
+
+  function outputOf(result) {
+    const values = toolEnvelopes(result);
+    return values.find(value => Array.isArray(value.selected_keys))
+      || values.find(value => value.profile?.id)
+      || values.find(value => value.selection_id)
+      || result?.structuredContent
+      || result;
+  }
+
+  function privatePayloadOf(result, key) {
+    for (const value of toolEnvelopes(result)) {
+      const payload = value?._meta?.[key] || value?.meta?.[key] || value?.[key];
+      if (payload) return payload;
+    }
+    return null;
+  }
+
+  function selectionOf(result) {
+    const payload = privatePayloadOf(result, selectionMetaKey);
+    if (payload?.items) return payload;
+    for (const value of toolEnvelopes(result)) if (Array.isArray(value?.items)) return value;
+    return null;
+  }
+
+  function launcherOf(result) {
+    const payload = privatePayloadOf(result, launcherMetaKey);
+    return payload?.profiles ? payload : null;
+  }
+
+  function analysisLaunchOf(result) {
+    const payload = privatePayloadOf(result, analysisMetaKey);
+    return payload?.analysis_id && payload?.profile_id ? payload : null;
+  }
+
+  function selectionIdOf(result) {
+    for (const value of toolEnvelopes(result)) {
+      if (typeof value.selection_id === "string" && value.selection_id) return value.selection_id;
+    }
+    return "";
+  }
+
+  async function callMcpTool(name, arguments_) {
+    if (typeof window.openai?.callTool === "function") return window.openai.callTool(name, arguments_);
+    return request("tools/call", { name, arguments: arguments_ });
+  }
+
+  async function sendFollowUp(message, title = "Req2Code") {
+    // MCP Apps standard first. The window.openai method is a compatibility
+    // alias and is not equally reliable across every compatible host.
+    try {
+      return await request("ui/message", { role: "user", content: [{ type: "text", text: message }] }, 15000);
+    } catch (standardError) {
+      if (typeof window.openai?.sendFollowUpMessage === "function") {
+        return window.openai.sendFollowUpMessage({ prompt: message, title, scrollToBottom: true });
+      }
+      throw standardError;
+    }
+  }
+
+  function showScreen(name) {
+    platformScreenEl.hidden = name !== "platforms";
+    profileScreenEl.hidden = name !== "profiles";
+    configScreenEl.hidden = name !== "config";
+    selectorScreenEl.hidden = name !== "selector";
+  }
+
+  function setHeader(title, hint, summary = "") {
+    document.getElementById("pageTitle").textContent = title;
+    document.getElementById("pageHint").textContent = hint;
+    summaryEl.textContent = summary;
+  }
+
+  function developmentHandoff(result) {
+    const selectedItems = (result?.selected_items || []).map(item => ({
+      key: item.key, spec: item.spec, id: item.id, type: item.type, title: item.title,
+      description: item.description, source: item.source, status: item.status,
+      priority: item.priority, severity: item.severity, owner: item.owner,
+      reporter: item.reporter, module: item.module, iteration: item.iteration,
+      updated_at: item.updated_at, source_url: item.source_url,
+      source_fields: item.source_fields, tapd_fields: item.tapd_fields,
+      analysis_notes: item.analysis_notes, field_analysis_id: item.field_analysis_id,
+    }));
+    return result?.handoff_prompt || [
+      "Req2Code 已确认开发任务。",
+      `selection_id=${result?.selection_id || data?.selection_id || ""}`,
+      `selected_keys=${(result?.selected_keys || [...selected]).join(",")}`,
+      `selected_items=${JSON.stringify(selectedItems)}`,
+      "以上 selected_items 是已由用户确认的工作项完整数据，仅用于确定开发和测试范围。",
+      "请立即继续当前 req2code-workflow。除非用户在打开选择器前明确指定了其他选项，否则使用当前代码项目根目录、保持当前已检出分支且不执行 pull。",
+      "调用 prepare_development_run 一次并传入 selection_id，严格执行返回的完整 task_brief：实现全部已选工作项，补充或修改测试，运行并修复相关检查，然后调用 finalize_development_run 生成审核报告。",
+      "完成后必须停在 waiting_approval，等待人工审核；未经明确批准不得提交或推送。",
+    ].join("\n");
+  }
+
+  function providerLabel(source) {
+    return { tapd: "TAPD", feishu: "飞书云文档", mock: "Mock 演示" }[source] || source;
+  }
+
+  function renderPlatforms() {
+    activeProvider = "";
+    showScreen("platforms");
+    const profiles = launcher?.profiles || [];
+    setHeader("选择需求平台", "选择 TAPD、飞书云文档或本地演示数据。", profiles.length ? `已有 ${profiles.length} 个本机配置` : "首次使用，请选择平台并添加配置");
+  }
+
+  function renderProfiles(source = activeProvider) {
+    if (!source) {
+      renderPlatforms();
+      return;
+    }
+    activeProvider = source;
+    retryAnalysisEl.hidden = true;
+    showScreen("profiles");
+    const profiles = (launcher?.profiles || []).filter(profile => profile.source === activeProvider);
+    setHeader(`选择${providerLabel(activeProvider)}配置`, "选择已有配置，或添加一个新的命名配置。", profiles.length ? `该平台已有 ${profiles.length} 个本机配置` : "该平台尚未添加配置");
+    document.getElementById("newProfile").textContent = `添加${providerLabel(activeProvider)}配置`;
+    profilesEl.replaceChildren();
+    if (!profiles.length) {
+      const empty = document.createElement("div");
+      empty.className = "empty";
+      empty.textContent = `尚无可用配置。点击“添加${providerLabel(activeProvider)}配置”开始。`;
+      profilesEl.append(empty);
+      return;
+    }
+    for (const profile of profiles) {
+      const card = document.createElement("div"); card.className = "profile";
+      const body = document.createElement("div");
+      const title = document.createElement("h2"); title.textContent = profile.name;
+      const tag = document.createElement("span"); tag.className = "tag"; tag.textContent = profile.source_label || profile.source;
+      title.append(tag);
+      const detail = document.createElement("div"); detail.className = "muted";
+      detail.textContent = profile.source === "tapd"
+        ? `项目 ${profile.workspace_id || "未填写"} · ${profile.auth_mode === "basic" ? "API 账号" : "开放应用"}`
+        : profile.source === "feishu"
+          ? `${profile.resource_type === "bitable" ? "多维表格" : profile.resource_type === "spreadsheet" ? "电子表格" : "飞书文档"} · 自建应用 · ${profile.document_url || "未填写链接"}`
+          : "本地演示数据";
+      body.append(title, detail);
+      const actions = document.createElement("div"); actions.className = "profile-actions";
+      const use = document.createElement("button"); use.type = "button"; use.className = "primary";
+      use.textContent = profile.source === "feishu" && profile.resource_type === "bitable" ? "AI 解析并选择工作项" : "使用并选择工作项";
+      use.addEventListener("click", () => loadWorkItems(profile.id));
+      const edit = document.createElement("button"); edit.type = "button"; edit.className = "secondary"; edit.textContent = "编辑";
+      edit.addEventListener("click", () => openConfig(profile.source, profile));
+      const remove = document.createElement("button"); remove.type = "button"; remove.className = "secondary"; remove.textContent = "删除";
+      remove.addEventListener("click", () => deleteProfile(profile));
+      actions.append(use, edit, remove); card.append(body, actions);
+      if (profile.source === "feishu" && profile.resource_type === "bitable") {
+        const notice = document.createElement("div"); notice.className = "muted"; notice.style.gridColumn = "1 / -1";
+        notice.textContent = "AI 解析会把字段名、字段类型、全部选择项和少量样例值发送给当前代码智能体；App ID / App Secret 不会发送。";
+        card.append(notice);
+      }
+      profilesEl.append(card);
+    }
+  }
+
+  async function selectProvider(source) {
+    activeProvider = source;
+    showScreen("profiles");
+    setHeader(`选择${providerLabel(source)}配置`, "正在刷新本机保存的配置…", "");
+    profilesEl.replaceChildren();
+    const loading = document.createElement("div");
+    loading.className = "empty";
+    loading.textContent = "正在加载配置…";
+    profilesEl.append(loading);
+    await hydrateLauncherFromUiTool();
+  }
+
+  function updateProviderFields() {
+    const provider = document.getElementById("provider").value;
+    const tapd = provider === "tapd";
+    const feishu = provider === "feishu";
+    document.getElementById("authGroup").hidden = provider === "mock";
+    for (const id of ["baseUrlGroup", "workspaceGroup"]) document.getElementById(id).hidden = !tapd;
+    for (const id of ["feishuDocumentUrlGroup", "feishuResourceTypeGroup", "feishuParseModeGroup", "feishuTableIdGroup", "feishuViewIdGroup", "feishuSheetIdGroup", "feishuFieldMappingGroup"]) document.getElementById(id).hidden = !feishu;
+    const authMode = document.getElementById("authMode");
+    const previousAuthMode = authMode.value;
+    authMode.innerHTML = feishu
+      ? '<option value="tenant">自建应用（App ID / App Secret）</option>'
+      : '<option value="oauth2">开放应用（client_id / client_secret）</option><option value="basic">API 账号（API user / password）</option>';
+    authMode.value = feishu
+      ? "tenant"
+      : (["oauth2", "basic"].includes(previousAuthMode) ? previousAuthMode : "oauth2");
+    const basic = authMode.value === "basic";
+    const needsCredentials = provider !== "mock";
+    for (const id of ["appIdGroup", "secretGroup"]) document.getElementById(id).hidden = !needsCredentials;
+    document.querySelector?.('label[for="authMode"]')?.replaceChildren(document.createTextNode(feishu ? "飞书接入方式" : "TAPD 接入方式"));
+    document.getElementById("appIdLabel").textContent = feishu ? "App ID" : (basic ? "API user" : "client_id");
+    document.getElementById("secretLabel").textContent = feishu ? "App Secret" : (basic ? "API password" : "client_secret");
+    document.getElementById("configNotice").textContent = feishu
+      ? "Req2Code 会在本机保存 App ID/App Secret 并验证读取权限。文档需对该自建应用开放访问；/docx/、/wiki/、/base/ 和 /sheets/ 已支持。"
+      : tapd ? "保存前会同时验证 TAPD 需求和缺陷接口。密钥不会写入聊天消息或审核报告。" : "Mock 配置不需要凭据，仅用于本地演示。";
+  }
+
+  function openConfig(source = activeProvider, profile = null) {
+    const selectedProvider = profile?.source || source;
+    if (!selectedProvider) {
+      renderPlatforms();
+      return;
+    }
+    showScreen("config");
+    setHeader(profile ? "编辑项目配置" : "添加项目配置", "连接验证与保存均由 Req2Code 本地执行。", "凭据不会发送给代码智能体");
+    document.getElementById("profileId").value = profile?.id || "";
+    document.getElementById("profileName").value = profile?.name || (selectedProvider === "mock" ? "Mock 演示" : "");
+    document.getElementById("provider").value = selectedProvider;
+    updateProviderFields();
+    document.getElementById("authMode").value = profile?.auth_mode || (selectedProvider === "feishu" ? "tenant" : "oauth2");
+    document.getElementById("baseUrl").value = profile?.base_url || "https://api.tapd.cn";
+    document.getElementById("workspaceId").value = profile?.workspace_id || "";
+    document.getElementById("documentUrl").value = profile?.document_url || "";
+    document.getElementById("resourceType").value = profile?.resource_type || "auto";
+    document.getElementById("parseMode").value = profile?.parse_mode || "auto";
+    document.getElementById("tableId").value = profile?.table_id || "";
+    document.getElementById("viewId").value = profile?.view_id || "";
+    document.getElementById("sheetId").value = profile?.sheet_id || "";
+    document.getElementById("feishuTableOptions").replaceChildren();
+    document.getElementById("feishuViewOptions").replaceChildren();
+    document.getElementById("feishuInspectStatus").textContent = "";
+    const fieldMapping = profile?.field_mapping || {};
+    for (const [id, key] of [["feishuIdField", "id_field"], ["feishuTitleField", "title_field"], ["feishuDescriptionField", "description_field"], ["feishuTypeField", "type_field"], ["feishuStatusField", "status_field"], ["feishuPriorityField", "priority_field"], ["feishuSeverityField", "severity_field"], ["feishuOwnerField", "owner_field"], ["feishuReporterField", "reporter_field"], ["feishuAcceptanceField", "acceptance_field"], ["feishuUpdatedField", "updated_field"]]) {
+      document.getElementById(id).value = fieldMapping[key] || "";
+    }
+    document.getElementById("appId").value = "";
+    document.getElementById("appSecret").value = "";
+    configStatusEl.textContent = profile ? "敏感字段留空将保留现有值" : "";
+    updateProviderFields();
+  }
+
+  function fillOptions(elementId, items, valueKey, labelKey) {
+    const list = document.getElementById(elementId);
+    list.replaceChildren();
+    for (const item of items || []) {
+      const option = document.createElement("option");
+      option.value = item[valueKey] || "";
+      option.label = item[labelKey] || option.value;
+      list.append(option);
+    }
+  }
+
+  async function inspectFeishuBitable() {
+    const button = document.getElementById("inspectFeishuBitable");
+    const status = document.getElementById("feishuInspectStatus");
+    button.disabled = true;
+    status.textContent = "正在读取多维表格中的数据表和视图…";
+    try {
+      const raw = await callMcpTool("inspect_feishu_bitable_for_ui", {
+        profile_id: document.getElementById("profileId").value,
+        document_url: document.getElementById("documentUrl").value.trim(),
+        app_id: document.getElementById("appId").value,
+        app_secret: document.getElementById("appSecret").value,
+        table_id: document.getElementById("tableId").value.trim(),
+        view_id: document.getElementById("viewId").value.trim(),
+      });
+      const result = outputOf(raw);
+      if (!Array.isArray(result?.tables)) throw new Error("未返回多维表格列表");
+      fillOptions("feishuTableOptions", result.tables, "table_id", "name");
+      fillOptions("feishuViewOptions", result.views, "view_id", "name");
+      document.getElementById("tableId").value = result.selected_table_id || "";
+      document.getElementById("viewId").value = result.selected_view_id || "";
+      const viewSummary = result.selected_view_id ? `，视图 ${result.selected_view_id}` : "，全部记录";
+      status.textContent = `当前数据表：${result.selected_table_name || result.selected_table_id}（${result.selected_table_id}）${viewSummary}；共 ${result.tables.length} 张数据表。`;
+    } catch (error) {
+      status.textContent = `读取失败：${error?.message || error}`;
+    } finally {
+      button.disabled = false;
+    }
+  }
+
+  async function deleteProfile(profile) {
+    if (typeof window.confirm === "function" && !window.confirm(`确认删除本机配置“${profile.name}”吗？`)) return;
+    try {
+      await callMcpTool("delete_source_profile_for_ui", { profile_id: profile.id });
+      await hydrateLauncherFromUiTool();
+    } catch (error) { setHeader("删除配置失败", error?.message || String(error), ""); }
+  }
+
+  async function hydrateLauncherFromUiTool() {
+    try {
+      const result = await callMcpTool("get_req2code_launcher_for_ui", {
+        item_type: launcher?.item_type || "all", limit: launcher?.limit || 200,
+      });
+      const payload = launcherOf(result);
+      if (!payload) throw new Error("UI 配置工具未返回项目档案");
+      launcher = payload; activeProvider ? renderProfiles(activeProvider) : renderPlatforms();
+    } catch (error) {
+      showLoadError(`配置加载失败：${error?.message || error}`);
+    }
+  }
+
+  async function hydrateSelectionFromUiTool() {
+    if (data?.items || !selectionId || hydrationPromise) return hydrationPromise;
+    hydrationPromise = (async () => {
+      try {
+        const result = await callMcpTool("get_work_item_selection_for_ui", { selection_id: selectionId });
+        if (!acceptToolResult(result)) throw new Error("UI 数据工具未返回候选项");
+      } catch (error) {
+        hydrationError = error?.message || String(error);
+      } finally { hydrationPromise = null; }
+    })();
+    return hydrationPromise;
+  }
+
+  function showWorkItemLoading(title, message) {
+    showScreen("selector");
+    itemsEl.replaceChildren();
+    const loading = document.createElement("div"); loading.className = "empty"; loading.textContent = message; itemsEl.append(loading);
+    setHeader(title, "只有明确确认后的完整工作项才会进入开发任务。", "处理中…");
+    updateStatus(message);
+  }
+
+  function analysisOf(result) {
+    for (const value of toolEnvelopes(result)) {
+      if (typeof value?.analysis_id === "string" && value.analysis_id) return value;
+    }
+    return result?.structuredContent || result;
+  }
+
+  async function createSelectionForProfile(profileId, analysisId = "") {
+    try {
+      const result = await callMcpTool("create_work_item_selection_for_ui", {
+        profile_id: profileId, item_type: launcher?.item_type || "all", limit: launcher?.limit || 200,
+        analysis_id: analysisId,
+      });
+      if (!acceptToolResult(result)) throw new Error("没有收到选择器数据");
+    } catch (error) { showLoadError(`工作项加载失败：${error?.message || error}`); }
+  }
+
+  async function startFeishuAnalysis(profileId) {
+    showWorkItemLoading("正在解析飞书多维表格", "正在读取字段定义、全部选择项和少量样例值…");
+    try {
+      const raw = await callMcpTool("create_feishu_table_analysis_for_ui", { profile_id: profileId, sample_limit: 60 });
+      const requestResult = analysisOf(raw);
+      if (!requestResult?.analysis_id) throw new Error("没有收到字段分析任务");
+      activeAnalysisId = requestResult.analysis_id;
+      const shortInstruction = [
+        `Req2Code 已准备飞书字段分析任务 analysis_id=${requestResult.analysis_id}。`,
+        `请按 req2code-workflow 调用 get_feishu_table_analysis_task(analysis_id=${requestResult.analysis_id}) 取得已授权字段结构，再调用 submit_feishu_table_analysis；当前不要开发代码，也不要复述表格字段或样例。`,
+      ].join("\n");
+      await sendFollowUp(shortInstruction, "分析飞书表格字段");
+      showWorkItemLoading(
+        "等待代码智能体分析字段",
+        "分析请求已发送。完成后会在当前对话底部直接打开新的工作项选择器，无需回到这里等待。",
+      );
+      retryAnalysisEl.hidden = false;
+    } catch (error) { showLoadError(`飞书字段分析失败：${error?.message || error}`); }
+  }
+
+  async function loadWorkItems(profileId) {
+    selected.clear(); data = null; selectionId = ""; activeAnalysisId = ""; activeProfileId = profileId;
+    retryAnalysisEl.hidden = true;
+    const profile = (launcher?.profiles || []).find(item => item.id === profileId);
+    if (profile?.source === "feishu" && profile.resource_type === "bitable") {
+      await startFeishuAnalysis(profileId);
+      return;
+    }
+    showWorkItemLoading("选择要开发的需求和缺陷", "正在从需求平台加载待处理工作项…");
+    await createSelectionForProfile(profileId);
+  }
+
+  function acceptToolResult(result) {
+    selectionId = selectionIdOf(result) || selectionId;
+    const selection = selectionOf(result);
+    if (selection?.items) {
+      data = selection; selectionId = selection.selection_id || selectionId;
+      window.clearTimeout(loadTimer); renderSelector(); return true;
+    }
+    const analysisLaunch = analysisLaunchOf(result);
+    if (analysisLaunch) {
+      window.clearTimeout(loadTimer);
+      activeProvider = "feishu";
+      activeProfileId = analysisLaunch.profile_id;
+      activeAnalysisId = analysisLaunch.analysis_id;
+      if (analysisLaunch.status === "completed" && openedAnalysisId !== analysisLaunch.analysis_id) {
+        openedAnalysisId = analysisLaunch.analysis_id;
+        showWorkItemLoading("选择要开发的需求和缺陷", "字段分析完成，正在本地过滤并加载待处理工作项…");
+        void createSelectionForProfile(analysisLaunch.profile_id, analysisLaunch.analysis_id);
+      }
+      return true;
+    }
+    const launcherPayload = launcherOf(result);
+    if (launcherPayload) {
+      launcher = launcherPayload; window.clearTimeout(loadTimer); activeProvider ? renderProfiles(activeProvider) : renderPlatforms(); return true;
+    }
+    if (selectionId) void hydrateSelectionFromUiTool();
+    return false;
+  }
+
+  function showLoadError(message) {
+    showScreen("selector");
+    setHeader("Req2Code 无法继续", "请检查本机连接与配置后重试。", "");
+    itemsEl.replaceChildren();
+    const empty = document.createElement("div"); empty.className = "empty"; empty.textContent = message; itemsEl.append(empty);
+    const profile = (launcher?.profiles || []).find(item => item.id === activeProfileId);
+    retryAnalysisEl.hidden = !(profile?.source === "feishu" && profile.resource_type === "bitable");
+    updateStatus("未创建开发任务");
+  }
+
+  function visibleItems() {
+    const query = searchEl.value.trim().toLowerCase();
+    const typeFilter = typeFilterEl.value || "all";
+    return (data?.items || []).filter(item => {
+      const matchesType = typeFilter === "all" || normalizedType(item) === typeFilter;
+      const keyFieldText = Object.entries(item.display_fields || {}).flatMap(([key, value]) => [key, value]);
+      const searchable = [item.key, item.id, item.display_id, item.title, item.status, item.priority, item.severity, item.owner, item.reporter, item.module, item.iteration, item.description_excerpt, ...keyFieldText].filter(Boolean).join(" ").toLowerCase();
+      return matchesType && (!query || searchable.includes(query));
+    });
+  }
+
+  function normalizedType(item) {
+    return ["bug", "defect"].includes(String(item?.type || "").toLowerCase()) ? "bug" : "requirement";
+  }
+
+  function localized(value, dictionary) {
+    const text = String(value || "").trim();
+    return dictionary[text.toLowerCase()] || text;
+  }
+
+  const statusLabels = { planning: "规划中", new: "新建", open: "待处理", in_progress: "进行中", processing: "进行中", resolved: "已解决", verified: "已验证", closed: "已关闭", rejected: "已拒绝", reopened: "重新打开", suspended: "已挂起" };
+  const priorityLabels = { urgent: "紧急", high: "高", medium: "中", middle: "中", low: "低" };
+  const severityLabels = { fatal: "致命", serious: "严重", normal: "一般", prompt: "提示", suggestion: "建议" };
+
+  function addField(target, label, value, dictionary = {}) {
+    if (!value) return;
+    const field = document.createElement("span"); field.className = "field"; field.textContent = `${label}：${localized(value, dictionary)}`; target.append(field);
+  }
+
+  function renderSelector() {
+    if (!data?.items) return;
+    showScreen("selector");
+    retryAnalysisEl.hidden = true;
+    const rows = visibleItems(); itemsEl.replaceChildren();
+    if (!rows.length) {
+      const empty = document.createElement("div"); empty.className = "empty"; empty.textContent = "没有匹配的待处理工作项"; itemsEl.append(empty);
+    }
+    const allItems = data.items || [];
+    const bugCount = allItems.filter(item => normalizedType(item) === "bug").length;
+    const storyCount = allItems.length - bugCount;
+    setHeader("选择要开发的需求和缺陷", "仅显示待处理工作项；确认后默认使用当前项目、当前分支且不自动 pull。", `${data.source_profile_name ? `${data.source_profile_name} · ` : ""}共 ${allItems.length} 项：需求 ${storyCount} · 缺陷 ${bugCount}；当前显示 ${rows.length} 项`);
+    for (const item of rows) {
+      const label = document.createElement("label"); label.className = "item";
+      const checkbox = document.createElement("input"); checkbox.type = "checkbox"; checkbox.checked = selected.has(item.key);
+      checkbox.addEventListener("change", () => { checkbox.checked ? selected.add(item.key) : selected.delete(item.key); updateStatus(); });
+      const body = document.createElement("div");
+      const title = document.createElement("div"); title.className = "title";
+      const badge = document.createElement("span"); badge.className = "badge"; badge.textContent = item.key;
+      const kind = normalizedType(item);
+      const typeBadge = document.createElement("span"); typeBadge.className = `type-badge ${kind === "bug" ? "type-bug" : "type-story"}`; typeBadge.textContent = kind === "bug" ? "缺陷" : "需求";
+      title.append(badge, typeBadge, document.createTextNode(item.title || "(无标题)"));
+      const meta = document.createElement("div"); meta.className = "meta";
+      addField(meta, "状态", item.status, statusLabels); addField(meta, "优先级", item.priority, priorityLabels);
+      if (kind === "bug") addField(meta, "严重程度", item.severity, severityLabels);
+      addField(meta, "负责人", item.owner); addField(meta, "报告人", item.reporter); addField(meta, "模块", item.module);
+      const submeta = document.createElement("div"); submeta.className = "submeta";
+      const sourceLabel = item.source === "feishu" ? "飞书" : String(item.source || "TAPD").toUpperCase();
+      const subParts = [`${sourceLabel} ${item.display_id || item.id}`];
+      if (item.iteration) subParts.push(`迭代 ${item.iteration}`); if (item.updated_at) subParts.push(`更新 ${item.updated_at}`);
+      submeta.textContent = subParts.join(" · "); body.append(title, meta, submeta);
+      if (item.description_excerpt) { const description = document.createElement("div"); description.className = "description"; description.textContent = item.description_excerpt; body.append(description); }
+      if (item.display_fields && Object.keys(item.display_fields).length) {
+        const keyFields = document.createElement("div"); keyFields.className = "key-fields";
+        for (const [fieldName, value] of Object.entries(item.display_fields)) addField(keyFields, fieldName, value);
+        body.append(keyFields);
+      }
+      label.append(checkbox, body); itemsEl.append(label);
+    }
+    updateStatus();
+  }
+
+  function updateStatus(message) {
+    statusEl.textContent = message || (selected.size ? `已选择 ${selected.size} 项` : "尚未选择");
+    confirmEl.disabled = selected.size === 0;
+  }
+
+  document.getElementById("chooseTapd").addEventListener("click", () => selectProvider("tapd"));
+  document.getElementById("chooseFeishu").addEventListener("click", () => selectProvider("feishu"));
+  document.getElementById("chooseMock").addEventListener("click", () => selectProvider("mock"));
+  document.getElementById("newProfile").addEventListener("click", () => openConfig(activeProvider));
+  document.getElementById("refreshProfiles").addEventListener("click", () => void hydrateLauncherFromUiTool());
+  document.getElementById("changeProvider").addEventListener("click", renderPlatforms);
+  document.getElementById("cancelConfig").addEventListener("click", () => void hydrateLauncherFromUiTool());
+  document.getElementById("inspectFeishuBitable").addEventListener("click", () => void inspectFeishuBitable());
+  document.getElementById("tableId").addEventListener("change", () => {
+    document.getElementById("viewId").value = "";
+    void inspectFeishuBitable();
+  });
+  document.getElementById("documentUrl").addEventListener("change", () => {
+    document.getElementById("tableId").value = "";
+    document.getElementById("viewId").value = "";
+    document.getElementById("feishuTableOptions").replaceChildren();
+    document.getElementById("feishuViewOptions").replaceChildren();
+    document.getElementById("feishuInspectStatus").textContent = "";
+  });
+  document.getElementById("provider").addEventListener("change", () => {
+    configStatusEl.textContent = "";
+    updateProviderFields();
+  });
+  document.getElementById("authMode").addEventListener("change", updateProviderFields);
+  document.getElementById("changeProfile").addEventListener("click", () => {
+    if (!launcher) {
+      void hydrateLauncherFromUiTool();
+      return;
+    }
+    const source = activeProvider || data?.source;
+    if (!source) {
+      renderPlatforms();
+      return;
+    }
+    activeProvider = source;
+    renderProfiles(source);
+    void hydrateLauncherFromUiTool();
+  });
+  searchEl.addEventListener("input", renderSelector);
+  typeFilterEl.addEventListener("change", renderSelector);
+  document.getElementById("all").addEventListener("click", () => { for (const item of visibleItems()) selected.add(item.key); renderSelector(); });
+  retryAnalysisEl.addEventListener("click", () => { if (activeProfileId) void loadWorkItems(activeProfileId); });
+
+  document.getElementById("configForm").addEventListener("submit", async event => {
+    event.preventDefault();
+    const button = document.getElementById("saveProfile"); button.disabled = true;
+    configStatusEl.textContent = "正在验证连接…";
+    try {
+      const raw = await callMcpTool("save_source_profile_for_ui", {
+        profile_id: document.getElementById("profileId").value,
+        profile_name: document.getElementById("profileName").value.trim(),
+        source: document.getElementById("provider").value,
+        auth_mode: document.getElementById("authMode").value,
+        base_url: document.getElementById("baseUrl").value.trim(),
+        workspace_id: document.getElementById("workspaceId").value.trim(),
+        app_id: document.getElementById("appId").value,
+        app_secret: document.getElementById("appSecret").value,
+        document_url: document.getElementById("documentUrl").value.trim(),
+        resource_type: document.getElementById("resourceType").value,
+        parse_mode: document.getElementById("parseMode").value,
+        table_id: document.getElementById("tableId").value.trim(),
+        view_id: document.getElementById("viewId").value.trim(),
+        sheet_id: document.getElementById("sheetId").value.trim(),
+        feishu_id_field: document.getElementById("feishuIdField").value.trim(),
+        feishu_title_field: document.getElementById("feishuTitleField").value.trim(),
+        feishu_description_field: document.getElementById("feishuDescriptionField").value.trim(),
+        feishu_type_field: document.getElementById("feishuTypeField").value.trim(),
+        feishu_status_field: document.getElementById("feishuStatusField").value.trim(),
+        feishu_priority_field: document.getElementById("feishuPriorityField").value.trim(),
+        feishu_severity_field: document.getElementById("feishuSeverityField").value.trim(),
+        feishu_owner_field: document.getElementById("feishuOwnerField").value.trim(),
+        feishu_reporter_field: document.getElementById("feishuReporterField").value.trim(),
+        feishu_acceptance_field: document.getElementById("feishuAcceptanceField").value.trim(),
+        feishu_updated_field: document.getElementById("feishuUpdatedField").value.trim(),
+      });
+      const result = outputOf(raw);
+      if (!result?.profile?.id) throw new Error(result?.message || "保存工具未返回项目配置");
+      document.getElementById("appId").value = ""; document.getElementById("appSecret").value = "";
+      configStatusEl.textContent = result.message || "已保存";
+      activeProvider = result.profile.source || activeProvider;
+      await hydrateLauncherFromUiTool();
+      await loadWorkItems(result.profile.id);
+    } catch (error) { configStatusEl.textContent = `保存失败：${error?.message || error}`; }
+    finally { button.disabled = false; }
+  });
+
+  confirmEl.addEventListener("click", async () => {
+    confirmEl.disabled = true; updateStatus("正在确认…");
+    try {
+      const raw = await callMcpTool("confirm_work_item_selection", { selection_id: data.selection_id, selected_keys: [...selected] });
+      const result = outputOf(raw);
+      updateStatus(`已确认 ${result?.selected_keys?.length || selected.size} 项，正在交给代码智能体开发和测试…`);
+      await sendFollowUp(developmentHandoff(result));
+    } catch (error) { updateStatus(`确认失败：${error?.message || error}`); confirmEl.disabled = false; }
+  });
+
+  window.addEventListener("message", event => {
+    if (event.source !== window.parent) return;
+    const message = event.data;
+    if (!message || message.jsonrpc !== "2.0") return;
+    if (message.id !== undefined && pending.has(message.id)) {
+      const job = pending.get(message.id); pending.delete(message.id); message.error ? job.reject(message.error) : job.resolve(message.result); return;
+    }
+    if (message.method === "ui/notifications/tool-result") acceptToolResult(message.params);
+  }, { passive: true });
+
+  window.addEventListener("openai:set_globals", event => {
+    const globals = event.detail?.globals || window.openai;
+    acceptToolResult({ structuredContent: globals?.toolOutput, toolResponseMetadata: globals?.toolResponseMetadata });
+  }, { passive: true });
+
+  async function initializeMcpApps() {
+    try {
+      await request("ui/initialize", { protocolVersion: "2026-01-26", appCapabilities: {}, appInfo: { name: "req2code-workflow-launcher", version: "0.10.0" } }, 5000);
+      notify("ui/notifications/initialized");
+    } catch (_) { /* Compatibility hosts hydrate through window.openai. */ }
+  }
+
+  function initialize() {
+    loadTimer = window.setTimeout(() => {
+      if (data?.items || launcher?.profiles) return;
+      showLoadError(`加载超时${hydrationError ? `：${hydrationError}` : ""}。请重试打开 Req2Code。`);
+    }, 20000);
+    const accepted = acceptToolResult({ structuredContent: window.openai?.toolOutput, toolResponseMetadata: window.openai?.toolResponseMetadata });
+    if (!accepted) void hydrateLauncherFromUiTool();
+    void initializeMcpApps();
+  }
+
+  initialize();
+</script>
+</body>
+</html>

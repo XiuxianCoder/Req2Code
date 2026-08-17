@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Req2Code 开发审核预览</title>
+  <style>
+    html, body { margin: 0; min-height: 100%; background: #111318; }
+    body { display: flex; justify-content: center; padding: 24px; }
+    iframe { width: min(1180px, 100%); height: 900px; border: 0; }
+  </style>
+</head>
+<body>
+<iframe id="app" src="/req2code/resources/development_review.html" title="Req2Code 开发审核"></iframe>
+<script>
+  const review = {
+    run_id: "demo-run-001", status: "waiting_approval", push_locked: true,
+    changed_files: [
+      "src/example/DemoView.vue", "src/example/DemoCard.vue",
+      "tests/example/DemoView.spec.ts", "tests/example/DemoCard.spec.ts"
+    ],
+    work_items: [
+      {
+        id: "DEMO-REQ-001", type: "requirement", title: "示例需求",
+        description: "这是公开演示任务，不包含真实业务数据。",
+        details: { status: "规划中", priority: "中", owner: "用户X", reporter: "用户X", module: "示例模块" }
+      },
+      {
+        id: "DEMO-BUG-001", type: "bug", title: "示例缺陷",
+        description: "这是公开演示任务，不包含真实业务数据。",
+        details: { status: "进行中", priority: "高", severity: "严重", owner: "用户X", reporter: "用户X", module: "示例模块" }
+      }
+    ],
+    item_results: [
+      {
+        item_id: "DEMO-REQ-001",
+        solution: "已完成示例功能实现并补充测试。",
+        changes: "完成公开演示所需的示例代码变更。",
+        changed_files: ["src/example/DemoView.vue", "tests/example/DemoView.spec.ts"],
+        test_evidence: "pnpm vitest run tests/example/DemoView.spec.ts：2/2 通过；pnpm build：通过。",
+        acceptance_result: "示例验收项全部通过。",
+        residual_risks: "无已知风险"
+      },
+      {
+        item_id: "DEMO-BUG-001",
+        solution: "已完成示例缺陷修复并补充测试。",
+        changes: "完成公开演示所需的示例代码变更。",
+        changed_files: ["src/example/DemoCard.vue", "tests/example/DemoCard.spec.ts"],
+        test_evidence: "pnpm vitest run tests/example/DemoCard.spec.ts：4/4 通过；Vite 生产构建通过。",
+        acceptance_result: "示例验收项全部通过。",
+        residual_risks: "无已知风险"
+      }
+    ],
+    implementation_plan: "实现所选演示工作项并补充自动化测试。",
+    implementation_summary: "已完成示例功能实现与验证。",
+    test_result: {
+      passed: true, source: "coding_agent",
+      coverage: 91.4,
+      details: "聚焦测试：6/6 通过\n生产构建：通过\n完整测试：94 passed"
+    },
+    verification_count: 1,
+    diff_hash: "9b97f2a3…6f12",
+    report_path: "~/.req2code/reports/run_demo-run-001.md",
+    planned_publication_target: "origin/feature/demo-change",
+    protected_branch_warning: false,
+    publish_nonce: "preview-only"
+  };
+  const frame = document.getElementById("app");
+  frame.addEventListener("load", () => {
+    frame.contentWindow.postMessage({
+      jsonrpc: "2.0",
+      method: "ui/notifications/tool-result",
+      params: { _meta: { "req2code/development-review": review }, run_id: review.run_id }
+    }, "*");
+    if (new URLSearchParams(location.search).get("publish") === "1") {
+      window.setTimeout(() => frame.contentDocument.getElementById("approve").click(), 250);
+    }
+  });
+  window.addEventListener("message", event => {
+    if (event.source !== frame.contentWindow || event.data?.id === undefined) return;
+    event.source.postMessage({ jsonrpc: "2.0", id: event.data.id, result: {} }, "*");
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,24 @@
+{
+  "name": "req2code",
+  "version": "0.9.0",
+  "description": "Configure TAPD or Feishu in a private UI, select work, guide the current coding agent, and require review before Git publication.",
+  "author": {
+    "name": "Req2Code contributors"
+  },
+  "keywords": ["tapd", "feishu", "requirements", "workflow", "code-review", "mcp"],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Req2Code",
+    "shortDescription": "Develop selected work with approval gates",
+    "longDescription": "Choose or configure a named TAPD, Feishu, or Mock source in a private UI, select one or more requirements or defects, prepare the current repository for the active Codex conversation, capture implementation and test evidence, and stop for human review before commit and push.",
+    "developerName": "Req2Code contributors",
+    "category": "Productivity",
+    "capabilities": ["Interactive"],
+    "defaultPrompt": [
+      "Use $req2code-workflow to open Req2Code, let me choose or configure a source, and develop the selected work in this project.",
+      "Open Req2Code, let me choose TAPD or Feishu, and show active requirements and defects with checkboxes."
+    ],
+    "brandColor": "#2F6FED"
+  },
+  "mcpServers": "./.mcp.json"
+}

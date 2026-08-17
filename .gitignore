@@ -1,0 +1,23 @@
+.req2code/
+.pytest_cache/
+.uv-cache/
+.coverage
+htmlcov/
+__pycache__/
+*.py[cod]
+*.rej
+reports/
+.venv/
+venv/
+.idea/
+.claude/settings.local.json
+# Build and local release artifacts
+dist/
+build/
+*.egg-info/
+
+# Local standalone smoke test
+.demo/
+.demo-*/
+.demo-config.yaml
+config.local.yaml
